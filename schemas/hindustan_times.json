@@ -1,0 +1,16 @@
+{
+    "target_name" : "https://www.hindustantimes.com/",
+    "scrap_interests" : [
+        "news_headlines",
+        "news_article"
+    ],
+    "news_headlines" : [
+        [ "span" , {
+            "action" : "fetch",
+            "store" : "headline"
+        } ],
+        [ "div" , {
+            "action" : "prune"
+        }]
+    ]
+}
