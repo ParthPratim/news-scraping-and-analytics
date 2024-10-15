@@ -18,9 +18,10 @@ scraped for each article
 
 class TimesNowScrapper :
     def __init__(self, start_time : int, end_time : int):
-        self.url_prefix = "https://timesofindia.indiatimes.com/archivelist/starttime-"
-        self.url_suffx = [ ".cms" , ".html" , ".news" ]
-        pass
+        self.url_prefix = "https://timesnownews.com/archivelist/starttime-"
+        self.url_suffix = [ ".xml" , ".php" ]
+        self.start_time = start_time
+        self.end_time = end_time
 
 
 class RecursiveParser:
