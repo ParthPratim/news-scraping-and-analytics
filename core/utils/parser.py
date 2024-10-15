@@ -18,19 +18,22 @@ scraped for each article
 
 class TimesNowScrapper :
     def __init__(self, start_time : int, end_time : int):
-        self.url_prefix_news = "https://timesnownews.com/archivelist/starttime-"
-        self.url_suffix_news = [ ".xml" , ".php" ]
+        self.url_prefix = "https://timesnownews.com/archivelist/starttime-"
+        self.url_suffix = [ ".xml" , ".php" ]
         self.start_time = start_time
         self.end_time = end_time
 
 
 class RecursiveParser:
 
-    def __init__(self, config, bs4Obj = None , schema_file = None):
+    def __init__(self, config, bs4Obj = None , useFallbackSchema = False, schema_file = None):
         self.config = config
         self.schema_file = schema_file
         self.bs4Obj = bs4Obj
-        self.schema = self.config.DEFAULT_SCHEMA
+        if useFallbackSchema:
+            self.schema = self.config.DEFAULT_SCHEMA
+        else:
+            self.schema = None
 
     def GetSchemaFile(self):
         return os.path.join(self.config.SCHEMA_DIRECTORY, self.schema_file)
