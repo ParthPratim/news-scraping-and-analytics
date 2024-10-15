@@ -1,3 +1,6 @@
+import json
+import os
+
 """
 Article Scraping Format
 -------------------
@@ -18,3 +21,23 @@ class TimesNowScrapper :
         self.url_prefix = "https://timesofindia.indiatimes.com/archivelist/starttime-"
         self.url_suffx = ".cms"
         pass
+
+
+class RecursiveParser:
+
+    def __init__(self, config, schema_file = None):
+        self.config = config
+        self.schema_file = schema_file
+        self.schema = None
+
+    def GetSchemaFile(self):
+        return os.path.join(self.config.SCHEMA_DIRECTORY, self.schema_file)
+
+    def LoadSchema(self):
+        with open(self.GetSchemaFile(), 'r') as jschema:
+            return json.load(jschema)
+
+    def DoParse(self):
+        self.schema = self.LoadSchema()
+        # Write logic for parsing the schema and use bs4 for parsing the website
+        # using the schema
