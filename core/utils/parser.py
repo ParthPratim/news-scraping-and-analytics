@@ -18,8 +18,8 @@ scraped for each article
 
 class TimesNowScrapper :
     def __init__(self, start_time : int, end_time : int):
-        self.url_prefix = "https://timesnownews.com/archivelist/starttime-"
-        self.url_suffix = [ ".xml" , ".php" ]
+        self.url_prefix_news = "https://timesnownews.com/archivelist/starttime-"
+        self.url_suffix_news = [ ".xml" , ".php" ]
         self.start_time = start_time
         self.end_time = end_time
 
