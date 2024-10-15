@@ -12,3 +12,9 @@ scraped for each article
                                 scraped
     7. Categories           : Categories and Subcategories this sample is from
 """
+
+class TimesNowScrapper :
+    def __init__(self, start_time : int, end_time : int):
+        self.url_prefix = "https://timesofindia.indiatimes.com/archivelist/starttime-"
+        self.url_suffx = ".cms"
+        pass
