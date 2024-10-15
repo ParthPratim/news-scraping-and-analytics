@@ -19,7 +19,7 @@ scraped for each article
 class TimesNowScrapper :
     def __init__(self, start_time : int, end_time : int):
         self.url_prefix = "https://timesofindia.indiatimes.com/archivelist/starttime-"
-        self.url_suffx = ".cms"
+        self.url_suffx = [ ".cms" , ".html" , ".news" ]
         pass
 
 
