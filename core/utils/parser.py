@@ -25,10 +25,18 @@ class TimesNowScrapper :
 
 class RecursiveParser:
 
+<<<<<<< HEAD
     def __init__(self, config, schema_file = None):
         self.config = config
         self.schema_file = schema_file
         self.schema = None
+=======
+    def __init__(self, config, bs4Obj = None , schema_file = None):
+        self.config = config
+        self.schema_file = schema_file
+        self.bs4Obj = bs4Obj
+        self.schema = self.config.DEFAULT_SCHEMA
+>>>>>>> stats-api
 
     def GetSchemaFile(self):
         return os.path.join(self.config.SCHEMA_DIRECTORY, self.schema_file)
