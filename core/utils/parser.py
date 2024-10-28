@@ -1,6 +1,9 @@
 import json
 import os
 
+import requests
+from bs4 import BeautifulSoup
+
 """
 Article Scraping Format
 -------------------
@@ -18,10 +21,35 @@ scraped for each article
 
 class TimesNowScrapper :
     def __init__(self, start_time : int, end_time : int):
-        self.url_prefix = "https://timesnownews.com/archivelist/starttime-"
-        self.url_suffix = [ ".xml" , ".php" ]
-        self.start_time = start_time
-        self.end_time = end_time
+        self.url_prefix = "https://timesofindia.indiatimes.com/archivelist/starttime-"
+        self.url_suffix = ".cms"
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/112.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'cross-site',
+            'Connection': 'keep-alive',
+            'Priority': 'u=0, i',
+        }
+    def download_content(self):
+        url = self.url_prefix + '40000' + self.url_suffix
+        response = requests.get(url , headers = self.headers)
+        return response.content
+
+    def response_parse(self):
+        with open("result.txt", 'r') as f: 
+            soup = BeautifulSoup(f, 'html.parser')
+            span_tags = soup.find_all('span', style="font-family:arial ;font-size:12;color: #006699")     
+            single_page = {
+                "url" : "",
+                "parse-time" : "",
+                "headline" : "",
+            }
+            for info in span_tags[0]:
+                for x in info : 
+                    print(x)
 
 
 class RecursiveParser:
@@ -46,3 +74,7 @@ class RecursiveParser:
         self.schema = self.LoadSchema()
         # Write logic for parsing the schema and use bs4 for parsing the website
         # using the schema
+
+if __name__ == "__main__" :
+    tt = TimesNowScrapper(0,0)
+    tt.response_parse()

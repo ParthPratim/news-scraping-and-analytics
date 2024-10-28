@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="news-feed">
+        {% for article in news %}
+            <article class="news-item">
+                <h2>{{ article.title }}</h2>
+                <p>{{ article.content }}</p>
+                <span class="category">{{ article.category }}</span>
+            </article>
+        {% endfor %}
+    </div>
+{% endblock %}
+
