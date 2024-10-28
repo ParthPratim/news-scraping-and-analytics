@@ -1,0 +1,1 @@
+from core.nsa import create_app

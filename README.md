@@ -6,8 +6,11 @@ News Scraping & Analytics Tool
 2. **Web** : Stores UI assets and dynamic HTML templates for frontend views.
 3. **Schemas** : Internal structures of news websites and MongoDB storage plans.
 
-### Contrbutors
+### Contrbutors (stats-api)
 1. **Parth Pratim Chatterjee**
+
+
+### Other Team Members
 2. **Utkarsh Tiwari**
 3. **Rohit Agrawal**
 
