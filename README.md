@@ -9,6 +9,10 @@ News Scraping & Analytics Tool
 ### Contrbutors (stats-api) <-- This Branch
 1. **Parth Pratim Chatterjee**
 
+
+### Steps to install
+
+
 ### Contributors (MainPage)
 1. **Utkarsh Tiwari**
 
@@ -18,5 +22,5 @@ News Scraping & Analytics Tool
 ### Other Team Members
 1. **Parth Pratim Chatterjee** : 24m0748
 2. **Utkarsh Tiwari** : 24m0754
-3. **Rohit Agrawal** : 
+3. **Rohit Agrawal** : 24m0744
 
