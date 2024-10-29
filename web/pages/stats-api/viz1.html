@@ -76,6 +76,9 @@ h2 {
     margin-top: 5px;
 }
 
+.centered-content{
+    text-align: center;
+}
 
 </style>
 </head>
@@ -113,6 +116,18 @@ h2 {
             <div class="chart-box">
                 <h2>Sources</h2>
                 <canvas id="sources"></canvas>
+            </div>
+            
+            <div class="chart-box">
+                <h2> Keyword-wise article growth </h2>
+                <div class="centered-content">
+                    <select id="keyword-selector">
+                        {% for item in all_keywords %}
+                            <option value={{item}}> {{ item }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <canvas id="kw-frequency"></canvas>
             </div>
         </div>
     </div>
@@ -164,6 +179,35 @@ h2 {
                 plugins: {legend: {position: 'left'}}
             }
         });
+
+        var changing_chart= new Chart(document.getElementById('kw-frequency'), {
+            type:'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Post growth by keyword",
+                    data: [] ,
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            }
+        });
+        
+        const xhttp = new XMLHttpRequest();
+        var kw_sel = document.getElementById('keyword-selector')
+        kw_sel.addEventListener('change' , ()=>{
+            console.log(kw_sel.value)
+            xhttp.onload = function(){
+                json_data = JSON.parse(xhttp.responseText)
+                changing_chart.data.labels = json_data['labels']
+                changing_chart.data['datasets'][0].data = json_data['data']
+                changing_chart.update()
+            }
+            xhttp.open("GET", "/stats/api/get-keyword-timeline/" + kw_sel.value)
+            xhttp.send()
+        })
+
     </script>
 </body>
 </html>
