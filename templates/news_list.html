@@ -1,0 +1,15 @@
+{% for news in news_items %}
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">
+            <a href="{{ news.url }}">{{ news.headline }}</a>
+        </h5>
+        <p class="card-text">
+            <small class="text-muted">
+                Published: {{ news.publish_date }} | 
+                Parsed: {{ news.parse_time }}
+            </small>
+        </p>
+    </div>
+</div>
+{% endfor %}
