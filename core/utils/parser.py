@@ -56,7 +56,6 @@ class TimesNowScrapper :
             url = self.url_prefix + str(days)  + self.url_suffix
             response = requests.get(url , headers = self.headers)
             print(f"Got response as {response.status_code}")
-            response.status_code = 201
             soup = BeautifulSoup(response.content, 'html.parser')
             if response.status_code != 200 :
                 print("WARNING CAN'T CONNECT TO TIMEWSNOW\n Sending dummy info : Would be later implemented in project")
