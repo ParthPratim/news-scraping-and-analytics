@@ -80,6 +80,20 @@ h2 {
     text-align: center;
 }
 
+.big-blue{
+    background-color: #2f7bc7;
+    padding: 5px;
+    color: white;
+    font-size: 15px;
+    border-radius: 5px;
+    width: 100px;
+    border: 1px solid white;
+}
+
+.big-blue:hover{
+    opacity: 0.9;
+}
+
 </style>
 </head>
 <body>
@@ -109,8 +123,21 @@ h2 {
             </div>
             
             <div class="chart-box">
-                <h2>Keywords</h2>
-                <canvas id="keywords"></canvas>
+                <h2> Multi-Keyword Trend Comparison</h2>
+                <div class="centered-content">
+                    <select id="keyword-selector-1">
+                        {% for item in all_keywords %}
+                            <option value={{item}}> {{ item }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="keyword-selector-2">
+                        {% for item in all_keywords %}
+                            <option value={{item}}> {{ item }}</option>
+                        {% endfor %}
+                    </select>
+                    <button id="compare-btn" class="big-blue"> Compare </button>
+                </div>
+                <canvas id="kw-compare"></canvas>
             </div>
             
             <div class="chart-box">
@@ -151,15 +178,22 @@ h2 {
             }
         });
 
-        new Chart(document.getElementById('keywords'), {
-            type:'bar',
+        var changing_comp_chart = new Chart(document.getElementById('kw-compare'), {
+            type:'line',
             data: {
-                labels: {{ kw_labels | tojson }},
+                labels: [],
                 datasets: [{
-                    label: "Frequency",
-                    data: {{ kw_data | tojson}},
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)' ,
-                    borderColor: 'rgb(75, 192, 192)',
+                    label: "Post growth by keyword1",
+                    data: [] ,
+                    fill: false,
+                    borderColor: 'rgb(255, 159, 64)',
+                    tension: 0.1
+                },{
+                label: "Post growth by keyword2",
+                    data: [] ,
+                    fill: false,
+                    borderColor: 'rgb(153, 102, 255)',
+                    tension: 0.1
                 }]
             }
         });
@@ -196,6 +230,8 @@ h2 {
         
         const xhttp = new XMLHttpRequest();
         var kw_sel = document.getElementById('keyword-selector')
+        var kw_sel1 = document.getElementById('keyword-selector-1')
+        var kw_sel2 = document.getElementById('keyword-selector-2')
         kw_sel.addEventListener('change' , ()=>{
             console.log(kw_sel.value)
             xhttp.onload = function(){
@@ -206,6 +242,25 @@ h2 {
             }
             xhttp.open("GET", "/stats/api/get-keyword-timeline/" + kw_sel.value)
             xhttp.send()
+        })
+
+        var kw_btn = document.getElementById('compare-btn')
+        kw_btn.addEventListener('click', ()=>{
+            
+            xhttp.onload = function(){
+                json_data = JSON.parse(xhttp.responseText)
+                changing_comp_chart.data.labels = json_data['labels']
+                changing_comp_chart.data['datasets'][0].data = json_data['data1']
+                changing_comp_chart.data['datasets'][0].label = "Post growth by " + kw_sel1.value
+                changing_comp_chart.data['datasets'][1].data = json_data['data2']
+                changing_comp_chart.data['datasets'][1].label = "Post growth by " + kw_sel2.value
+                changing_comp_chart.update()
+            }
+
+            xhttp.open("POST", "/stats/api/get-keyword-comparison")
+            xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xhttp.send(JSON.stringify({ "keyword1" : kw_sel1.value , "keyword2" : kw_sel2.value }));
+
         })
 
     </script>

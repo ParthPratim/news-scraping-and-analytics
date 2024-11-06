@@ -11,11 +11,10 @@ News Scraping & Analytics Tool
 
 
 ### Steps to install
-git clone git@github.com:ParthPratim/news-scraping-and-analytics.git
+git clone git@github.com:ParthPratim/news-scraping-and-analytics.git --branch stats-api
 cd news-scraping-and-analytics 
 python -m pip install requirements.txt
 export PYTHONPATH=$(pwd):$PYTHONPATH && flask --app news-service run 
-
 
 ### Contributors (MainPage)
 1. **Utkarsh Tiwari**

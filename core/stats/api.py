@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, current_app, jsonify
+from flask import Blueprint, render_template, current_app, jsonify, request
 import json
 import pandas as pd
+import random
 from collections import defaultdict
 import os
 
@@ -50,4 +51,31 @@ def get_keyword_timeline(keyword):
     return jsonify({
         "labels" : list(date_count.keys()),
         "data" : list(date_count.values()),
+    })
+
+@stats_api.route('/api/get-keyword-comparison', methods=['POST'])
+def get_keyword_comparison():
+    req_data = request.json
+    data_file = current_app.config['SAMPLE_TEST_DATA_PATH']
+    with open(data_file , 'r') as f:
+        data = json.load(f)
+    
+    date_count1 = defaultdict(lambda : 0)
+    date_count2 = defaultdict(lambda : 0)
+    for sample in data:
+        if req_data['keyword1'] in sample['keywords']:
+            date_count1[sample['posted_date']] += 1
+        
+        if req_data['keyword2'] in sample['keywords']:
+            date_count2[sample['posted_date']] += 1
+    
+    labels = list(set(list(date_count1.keys()) + list(date_count2.keys())))
+    labels.sort()
+    llen = len(labels)
+    labels = random.sample(labels, int(0.4 * llen))
+
+    return jsonify({
+        "labels" : labels,
+        "data1" : list([date_count1[label] for label in labels]),
+        "data2" : list([date_count2[label] for label in labels]),
     })

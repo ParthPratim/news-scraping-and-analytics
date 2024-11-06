@@ -2,5 +2,5 @@
     "SAMPLE_TEST_DATA_PATH" : "data/sample_news_data.json",
 
     
-    "STATS-API-TEMPLATES" : "../../web/pages/stats-api"
+    "STATS_API_TEMPLATES" : "../../web/pages/stats-api"
 }
