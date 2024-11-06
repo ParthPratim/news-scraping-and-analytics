@@ -4,6 +4,9 @@ from core.utils import *
 from core.config import ApplicationConfig
 import json
 
+def setup_mongo_db_documents():
+    pass
+
 # https://flask.palletsprojects.com/en/stable/tutorial/factory/
 def create_app(test_config=None):
 

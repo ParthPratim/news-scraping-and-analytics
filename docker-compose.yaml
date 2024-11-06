@@ -7,6 +7,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: root
     ports:
       - 27017:27017  # Expose MongoDB's default port on the host
+    volumes:
+      - mongo_data:/data/db  # Mount the volume to persist data
 
   mongo-express:
     image: mongo-express
@@ -18,3 +20,7 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: root
       ME_CONFIG_MONGODB_URL: mongodb://root:root@mongo:27017/
       ME_CONFIG_BASICAUTH: false
+
+volumes:
+  mongo_data:
+    driver: local
