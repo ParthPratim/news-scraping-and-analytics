@@ -1,0 +1,6 @@
+{
+    "SAMPLE_TEST_DATA_PATH" : "data/sample_news_data.json",
+
+    
+    "STATS_API_TEMPLATES" : "../../web/pages/stats-api"
+}
