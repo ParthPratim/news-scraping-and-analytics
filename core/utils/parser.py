@@ -4,6 +4,9 @@ import datetime
 
 import requests
 from bs4 import BeautifulSoup
+from flask import current_app as app
+
+from core.models import ScrappedNews
 
 """
 Article Scraping Format
@@ -39,17 +42,11 @@ class TimesNowScrapper :
         self.end_time = (end_time - datetime.datetime(1900,1,1,)).days+2
         print(f"TimesNowParser starting with {self.start_time} to {self.end_time}")
         self.news_list = []
+        self.db = app.db
 
     def download_content(self):
         days = self.start_time
         json_content = []
-        single_page = {
-            "url" : "",
-            "parse_time" : "",
-            "publish_date" : "",
-            "headline" : "",
-            "source" : "TOI"
-        }
         base_url = "https://timesofindia.indiatimes.com"
         while days <= self.end_time:
             url = self.url_prefix + str(days)  + self.url_suffix
@@ -64,18 +61,26 @@ class TimesNowScrapper :
             for info in span_tags:
                 links = [(a.get('href'), a.text) for a in info.find_all('a')]
                 for url, text in links:
-                    curr_page = single_page.copy()
                     url = url if url[:4] == "http" else base_url + url
-                    curr_page["url"] = url
-                    curr_page["headline"] = text
-                    curr_page["parse_time"] = str(datetime.datetime.now(datetime.UTC))
-                    publish_date = datetime.datetime(1900,1,1) + datetime.timedelta(days-2)
-                    curr_page["publish_date"] = str(publish_date.strftime("%Y-%m-%d"))
-                    json_content.append(curr_page)
+                    news_item = ScrappedNews(url=url,
+                                             headline=text, 
+                                             parse_time=str(datetime.datetime.now(datetime.UTC)),
+                                             scrapped_source = "TOI",
+                                             published_date=datetime.datetime(1900,1,1) + datetime.timedelta(days-2)
+                    )
+                    news_item.save_to_mongo(self.db.toi_collection)
+                    # curr_page = single_page.copy()
+                    # url = url if url[:4] == "http" else base_url + url
+                    # curr_page["url"] = url
+                    # curr_page["headline"] = text
+                    # curr_page["parse_time"] = str(datetime.datetime.now(datetime.UTC))
+                    # publish_date = datetime.datetime(1900,1,1) + datetime.timedelta(days-2)
+                    # curr_page["publish_date"] = str(publish_date.strftime("%Y-%m-%d"))
+                    # json_content.append(curr_page)
             print(f"Finished parsing {days}")
             days = days + 1
         print(f"Parser done! with {self.start_time} and {self.end_time}")
-        self.news_list = json_content.copy()
+        # self.news_list = json_content.copy()
         return json_content
 
 
