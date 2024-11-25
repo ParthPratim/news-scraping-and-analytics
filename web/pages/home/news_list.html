@@ -6,10 +6,16 @@
         </h5>
         <p class="card-text">
             <small class="text-muted">
-                Published: {{ news.publish_date }} | 
+                Published: {{ news.published_date }} | 
                 Parsed: {{ news.parse_time }}
             </small>
+            <br>
         </p>
+        <div class="keywords">
+            {% for keyword in news.kws %}
+                <span class="badge bg-secondary me-1">{{ keyword }}</span>
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endfor %}

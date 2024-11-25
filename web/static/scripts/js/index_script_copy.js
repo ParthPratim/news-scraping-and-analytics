@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const formData = new FormData(dateForm);
 
-        fetch('/get_news', {
+        fetch('/fetch_news', {
             method: 'POST',
             body: formData
         })
