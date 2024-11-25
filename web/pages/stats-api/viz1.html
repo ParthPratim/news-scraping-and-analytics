@@ -271,7 +271,7 @@ canvas{
             
             <div class="chart-box">
                 <h2>Sources</h2>
-                <canvas id="sources"></canvas>
+                <canvas id="plot4"></canvas>
             </div>
             
             <div class="chart-box">
@@ -347,12 +347,14 @@ canvas{
         new Chart(document.getElementById('plot4'), {
             type:'doughnut',
             data: {
-                labels: [],
+                labels: ["Times of India"],
                 datasets: [{
                     label: "News Source Split",
                     data: [100] ,
-                    fill: false,
-                    borderColor: 'rgb(255, 159, 64)',
+                    backgroundColor: [
+                    'rgb(255, 99, 132)',
+                    ],
+                    hoverOffset: 4,
                     tension: 0.1
                 }]
             }
