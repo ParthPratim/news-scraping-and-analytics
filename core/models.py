@@ -14,6 +14,7 @@ class ScrappedNews(StorageModel):
                  parse_time = None, 
                  published_date = None,
                  headline = None,
-                 scrapped_source = None
+                 scrapped_source = None,
+                 kws = None,
                  ):
         StorageModel.__init__(**locals())

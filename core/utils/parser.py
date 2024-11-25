@@ -89,10 +89,6 @@ class TimesNowScrapper :
             response = requests.get(url , headers = self.headers)
             print(f"Got response as {response.status_code}")
             soup = BeautifulSoup(response.content, 'html.parser')
-            # if response.status_code != 200 :
-                # print("WARNING CAN'T CONNECT TO TIMEWSNOW\n Sending dummy info : Would be later implemented in project")
-                # with open('./core/utils/result.txt', 'r') as f :
-                #     soup = BeautifulSoup(f, 'html.parser')
             span_tags = soup.find_all('span', style="font-family:arial ;font-size:12;color: #006699")     
             pub_date = datetime.datetime(1900,1,1) + datetime.timedelta(days-2)
             count_articles = 0
@@ -101,29 +97,30 @@ class TimesNowScrapper :
                 for url, text in links:
                     count_articles += 1
                     kws = get_keywords(text)
+                    approved_kws = [kw for kw in kws if isOkay(kw)]
                     url = url if url[:4] == "http" else base_url + url
                     news_item = ScrappedNews(url=url,
                                              headline=text, 
                                              parse_time=str(datetime.datetime.now(datetime.UTC)),
                                              scrapped_source = "TOI",
-                                             published_date=pub_date
+                                             published_date=pub_date,
+                                             kws=approved_kws,
                     )
                     news_item.save_to_mongo(self.db.toi_collection)
 
-                    
                     curr_docs = self.db.statistics.find({
                         "filter" : 2,
                         "tag" : {
-                            "$in" : kws
+                            "$in" : approved_kws
                         }
                     }, {
                         "tag" : 1
                     })
-                    
+
                     curr_kws = {curr_doc['tag'] for curr_doc in curr_docs}
-                    
-                    not_present_kws = sum( kw not in curr_kws for kw in kws)                    
-                    
+
+                    not_present_kws = sum( kw not in curr_kws for kw in approved_kws)
+
                     self.db.statistics.update_many(
                         {
                             "year": True,
@@ -146,9 +143,7 @@ class TimesNowScrapper :
                         }
                     }, upsert=True)
 
-                    for kw in kws:
-                        if not isOkay(kw):
-                            continue
+                    for kw in approved_kws:
 
                         self.db.statistics.update_one(
                             {
@@ -218,7 +213,8 @@ class TimesNowScrapper :
             }, upsert=True)
                 
             print(f"Finished parsing {days}")
-            days = days + random.randrange(4,7)
+            # days = days + random.randrange(4,7)
+            days = days + 1
 
         print(f"Parser done! with {self.start_time} and {self.end_time}")
         # self.news_list = json_content.copy()
