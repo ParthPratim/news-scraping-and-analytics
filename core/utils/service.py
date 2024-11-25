@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, abort,  request, jsonify
 from jinja2 import TemplateNotFound
+from core.utils.loader import getFromKeyWords
 from core.utils.parser import TimesNowScrapper
 from datetime import datetime, timedelta
 from core.utils.loader import *
@@ -33,6 +34,11 @@ def get_news():
     print(f"GOT FETCH REQUEST with start {start_time} end : {end_time}")
     return jsonify({'news' : getNews(start_time, end_time)})
 
+@home.route('/filter_news', methods=['POST'])
+def filter_news():
+    data = request.get_json()
+    keywords = data.get('keywords', [])
+    return jsonify({"news" : getFromKeyWords(keywords)})
 
 @home.route('/latest')
 def latest_news():
