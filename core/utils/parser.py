@@ -1,10 +1,14 @@
 import json
 import os
 import datetime
-import math
+import random
 
 import requests
 from bs4 import BeautifulSoup
+from flask import current_app as app
+
+from core.models import ScrappedNews
+from core.utils.tagger import get_keywords
 
 """
 Article Scraping Format
@@ -22,7 +26,7 @@ scraped for each article
 """
 
 class TimesNowScrapper :
-    def __init__(self, start_time : datetime.datetime , end_time : datetime.datetime, items_per_page : int = 10):
+    def __init__(self, start_time : datetime.datetime , end_time : datetime.datetime):
         self.url_prefix = "https://timesofindia.indiatimes.com/archivelist/starttime-"
         self.url_suffix = ".cms"
         self.headers = {
@@ -38,45 +42,103 @@ class TimesNowScrapper :
         self.ancient_time = 37062 # 20 June 2001
         self.start_time = (start_time - datetime.datetime(1900,1,1)).days + 2
         self.end_time = (end_time - datetime.datetime(1900,1,1,)).days+2
-        self.items_per_page = items_per_page
         print(f"TimesNowParser starting with {self.start_time} to {self.end_time}")
         self.news_list = []
+        self.db = app.db
 
     def download_content(self):
         days = self.start_time
         json_content = []
-        single_page = {
-            "url" : "",
-            "parse_time" : "",
-            "publish_date" : "",
-            "headline" : "",
-        }
         base_url = "https://timesofindia.indiatimes.com"
         while days <= self.end_time:
+            
             url = self.url_prefix + str(days)  + self.url_suffix
             response = requests.get(url , headers = self.headers)
             print(f"Got response as {response.status_code}")
             soup = BeautifulSoup(response.content, 'html.parser')
-            if response.status_code != 200 :
-                print("WARNING CAN'T CONNECT TO TIMEWSNOW\n Sending dummy info : Would be later implemented in project")
-                with open('./core/utils/result.txt', 'r') as f :
-                    soup = BeautifulSoup(f, 'html.parser')
+            # if response.status_code != 200 :
+                # print("WARNING CAN'T CONNECT TO TIMEWSNOW\n Sending dummy info : Would be later implemented in project")
+                # with open('./core/utils/result.txt', 'r') as f :
+                #     soup = BeautifulSoup(f, 'html.parser')
             span_tags = soup.find_all('span', style="font-family:arial ;font-size:12;color: #006699")     
+            pub_date = datetime.datetime(1900,1,1) + datetime.timedelta(days-2)
+            count_articles = 0;
             for info in span_tags:
                 links = [(a.get('href'), a.text) for a in info.find_all('a')]
                 for url, text in links:
-                    curr_page = single_page.copy()
+                    count_articles += 1
+                    kws = get_keywords(text)
                     url = url if url[:4] == "http" else base_url + url
-                    curr_page["url"] = url
-                    curr_page["headline"] = text
-                    curr_page["parse_time"] = str(datetime.datetime.now(datetime.UTC))
-                    publish_date = datetime.datetime(1900,1,1) + datetime.timedelta(days-2)
-                    curr_page["publish_date"] = str(publish_date.strftime("%Y-%m-%d"))
-                    json_content.append(curr_page)
+                    news_item = ScrappedNews(url=url,
+                                             headline=text, 
+                                             parse_time=str(datetime.datetime.now(datetime.UTC)),
+                                             scrapped_source = "TOI",
+                                             published_date=pub_date
+                    )
+                    news_item.save_to_mongo(self.db.toi_collection)
+                    curr_docs = self.db.statistics.find({
+                        "filter" : 2,
+                        "tag" : {
+                            "$in" : kws
+                        }
+                    }, {
+                        "tag" : 1
+                    })
+
+                    curr_kws = {curr_doc['tag'] for curr_doc in curr_docs}
+                    
+                    not_present_kws = sum( kw not in curr_kws for kw in kws)                    
+
+                    self.db.statistics.update_many(
+                        {
+                            "year": True,
+                            "filter" : 2,
+                            "tag" : {
+                                "$in" : kws
+                            }
+                        }
+                    ,{
+                        '$inc' : {
+                            pub_date.year : 1
+                        }
+                    }, upset=True)
+
+                    self.db.statistics.update_many(
+                        {
+                            "year": True,
+                            "filter" : 3,
+                            "tag" : 1
+                        }
+                    ,{
+                        '$inc' : {
+                            pub_date.year : 1
+                        }
+                    }, upset=True)
+                    
+
+                    # curr_page = single_page.copy()
+                    # url = url if url[:4] == "http" else base_url + url
+                    # curr_page["url"] = url
+                    # curr_page["headline"] = text
+                    # curr_page["parse_time"] = str(datetime.datetime.now(datetime.UTC))
+                    # publish_date = datetime.datetime(1900,1,1) + datetime.timedelta(days-2)
+                    # curr_page["publish_date"] = str(publish_date.strftime("%Y-%m-%d"))
+                    # json_content.append(curr_page)
+                
+            self.db.statistics.update_one({
+                "year" : True,
+                "filter" : 1,
+            }, {
+                '$inc' : {
+                    pub_date.year : count_articles
+                }
+            }, upsert=True)
+
             print(f"Finished parsing {days}")
-            days = days + 1
+            days = days + random.randrange(4,7)
+
         print(f"Parser done! with {self.start_time} and {self.end_time}")
-        self.news_list = json_content.copy()
+        # self.news_list = json_content.copy()
         return json_content
 
 
@@ -110,4 +172,6 @@ if __name__ == "__main__" :
     today = datetime.datetime.now()
     tt = TimesNowScrapper(today,today)
     s = tt.download_content()
-    print(s)
+
+    with open('new_test', 'w+') as f:
+        f.write(json.dumps(s))
