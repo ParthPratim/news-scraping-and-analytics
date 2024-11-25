@@ -1,12 +1,14 @@
 import json
 import os
 import datetime
+import random
 
 import requests
 from bs4 import BeautifulSoup
 from flask import current_app as app
 
 from core.models import ScrappedNews
+from core.utils.tagger import get_keywords
 
 """
 Article Scraping Format
@@ -49,6 +51,7 @@ class TimesNowScrapper :
         json_content = []
         base_url = "https://timesofindia.indiatimes.com"
         while days <= self.end_time:
+            
             url = self.url_prefix + str(days)  + self.url_suffix
             response = requests.get(url , headers = self.headers)
             print(f"Got response as {response.status_code}")
@@ -58,17 +61,61 @@ class TimesNowScrapper :
                 # with open('./core/utils/result.txt', 'r') as f :
                 #     soup = BeautifulSoup(f, 'html.parser')
             span_tags = soup.find_all('span', style="font-family:arial ;font-size:12;color: #006699")     
+            pub_date = datetime.datetime(1900,1,1) + datetime.timedelta(days-2)
+            count_articles = 0;
             for info in span_tags:
                 links = [(a.get('href'), a.text) for a in info.find_all('a')]
                 for url, text in links:
+                    count_articles += 1
+                    kws = get_keywords(text)
                     url = url if url[:4] == "http" else base_url + url
                     news_item = ScrappedNews(url=url,
                                              headline=text, 
                                              parse_time=str(datetime.datetime.now(datetime.UTC)),
                                              scrapped_source = "TOI",
-                                             published_date=datetime.datetime(1900,1,1) + datetime.timedelta(days-2)
+                                             published_date=pub_date
                     )
                     news_item.save_to_mongo(self.db.toi_collection)
+                    curr_docs = self.db.statistics.find({
+                        "filter" : 2,
+                        "tag" : {
+                            "$in" : kws
+                        }
+                    }, {
+                        "tag" : 1
+                    })
+
+                    curr_kws = {curr_doc['tag'] for curr_doc in curr_docs}
+                    
+                    not_present_kws = sum( kw not in curr_kws for kw in kws)                    
+
+                    self.db.statistics.update_many(
+                        {
+                            "year": True,
+                            "filter" : 2,
+                            "tag" : {
+                                "$in" : kws
+                            }
+                        }
+                    ,{
+                        '$inc' : {
+                            pub_date.year : 1
+                        }
+                    }, upset=True)
+
+                    self.db.statistics.update_many(
+                        {
+                            "year": True,
+                            "filter" : 3,
+                            "tag" : 1
+                        }
+                    ,{
+                        '$inc' : {
+                            pub_date.year : 1
+                        }
+                    }, upset=True)
+                    
+
                     # curr_page = single_page.copy()
                     # url = url if url[:4] == "http" else base_url + url
                     # curr_page["url"] = url
@@ -77,8 +124,19 @@ class TimesNowScrapper :
                     # publish_date = datetime.datetime(1900,1,1) + datetime.timedelta(days-2)
                     # curr_page["publish_date"] = str(publish_date.strftime("%Y-%m-%d"))
                     # json_content.append(curr_page)
+                
+            self.db.statistics.update_one({
+                "year" : True,
+                "filter" : 1,
+            }, {
+                '$inc' : {
+                    pub_date.year : count_articles
+                }
+            }, upsert=True)
+
             print(f"Finished parsing {days}")
-            days = days + 1
+            days = days + random.randrange(4,7)
+
         print(f"Parser done! with {self.start_time} and {self.end_time}")
         # self.news_list = json_content.copy()
         return json_content

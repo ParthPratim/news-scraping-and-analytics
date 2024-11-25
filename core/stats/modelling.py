@@ -9,20 +9,15 @@ based on which date was the news article published
 
 """
 
-def update_news_publishing_trends(news_list):
-    update_successful = True
-    # Todo 1. Load MongoDB object, and update date_map[news['publish_date']] += 1
-
-    return update_successful
-
-def get_news_publishing_trends():
-
-    news_map = defaultdict(lambda : x)
-
-    # Todo 1. Open MongoDB object, and return back the current statistics
+def get_year_vs_total_no_of_articles(
+        db,
+        year_range = (2010, 2022), 
+        keyword_set = [], 
+        source = []):
     
-    """
-    { 'month-year' : 'number-of-articles-published-on-this-month-year' }
-    """
-    
-    return news_map
+
+
+
+
+        
+        

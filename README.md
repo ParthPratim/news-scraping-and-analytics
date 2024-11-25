@@ -27,3 +27,13 @@ export PYTHONPATH=$(pwd):$PYTHONPATH && flask --app news-service run
 2. **Utkarsh Tiwari** : 24m0754
 3. **Rohit Agrawal** : 24m0744
 
+### Statistics Document Storage Types
+Some hard mappings to make lookups efficient
+#### Filter
+1. No Filter
+2. Category
+3. Source
+4. Unique KW count
+#### Type (Source)
+1. TOI
+2. ...

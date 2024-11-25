@@ -10,6 +10,21 @@ def setup_mongo_db_documents(app):
     mongo = PyMongo(app)
     app.db = mongo.db
 
+    # Statistics 
+    def create_if_not_exists(doc_name):
+        doc = app.db.statistics.find_one({
+            "_id" : doc_name
+        })
+        
+        if not doc:
+            app.db.statistics.insert_one({
+                "_id" : doc_name
+            })
+    
+    return 
+    
+
+
 # https://flask.palletsprojects.com/en/stable/tutorial/factory/
 def create_app(test_config=None):
 
