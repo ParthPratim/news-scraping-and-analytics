@@ -41,6 +41,10 @@ h2 {
     margin-top: 20px
 }
 
+canvas{
+    width: 100%;
+}
+
 .chart-box {
     background: #fff;
     border-radius: 8px;
@@ -48,6 +52,10 @@ h2 {
     margin-bottom: 20px;
     box-shadow: 0 2px 4px #0001; 
     height: 400px; 
+}
+
+.full-row{
+    grid-column: 1 / -1;
 }
 
 #stats {
@@ -82,7 +90,7 @@ h2 {
 
 .big-blue{
     background-color: #2f7bc7;
-    padding: 5px;
+    padding: 15px 10px 15px 10px;
     color: white;
     font-size: 15px;
     border-radius: 5px;
@@ -94,6 +102,95 @@ h2 {
     opacity: 0.9;
 }
 
+.labeled-select-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+/* Label styling */
+.floating-label {
+    position: absolute;
+    left: 12px;
+    top: -8px;
+    background-color: white;
+    padding: 0 5px;
+    font-size: 12px;
+    color: var(--primary-color);
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Custom select styling */
+.labeled-select {
+    position: relative;
+    width: 100%;
+}
+
+.labeled-select select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    color: var(--text-color);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Focus state */
+.labeled-select select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.labeled-select select:focus + .floating-label,
+.labeled-select select:not([value=""]) + .floating-label {
+    color: var(--primary-color);
+    top: -8px;
+    font-size: 12px;
+}
+
+
+/* Hover effects */
+.labeled-select select:hover {
+    border-color: #666;
+    background-color: #f9f9f9;
+}
+
+/* Submit button */
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background-color: #1976D2;
+}
+
+.submit-btn:disabled {
+    background-color: #b0b0b0;
+    cursor: not-allowed;
+}
+
+.row-select-dp{
+    width: 40%;
+    display: inline-block;
+    vertical-align: middle;
+}
 </style>
 </head>
 <body>
@@ -102,15 +199,19 @@ h2 {
         
         <div id="stats">
             <div class="stat_box">
-                <div class="number">{{ data | sum }}</div>
+                <div class="number">{{ total_articles }}</div>
                 <div class="label">Total Articles</div>
             </div>
             <div class="stat_box">
-                <div class="number">{{ kw_labels | length }}</div>
+                <div class="number">{{ range }}</div>
+                <div class="label">Year Range</div>
+            </div>
+            <div class="stat_box">
+                <div class="number">{{ num_keywords }}</div>
                 <div class="label">Keywords</div>
             </div>
             <div class="stat_box">
-                <div class="number">{{ src_labels | length }}</div>
+                <div class="number">{{ sources }}</div>
                 <div class="label">Sources</div>
             </div>
         </div>
@@ -118,31 +219,54 @@ h2 {
         
         <div class="charts">
             <div class="chart-box">
-                <h2>Posts Over Time</h2>
-                <canvas id="frequency"></canvas>
+                <h2>News Articles Over Time</h2>
+                <canvas id="plot1"></canvas>
             </div>
             
             <div class="chart-box">
-                <h2>Posts Over Time</h2>
-                <canvas id="frequency"></canvas>
+                <h2>Articles per Keyword Over Time</h2>
+                <div class="labeled-select-container">
+                    <div class="labeled-select">
+                        <select required id="plot2-select">
+                            <option value="" disabled selected></option>
+                            {% for item in keyword_list %}
+                            <option value={{item}}> {{ item }}</option>
+                            {% endfor %}
+                        </select>
+                        <label class="floating-label">Select Keyword</label>
+                    </div>
+                </div>
+                <canvas id="plot2"></canvas>
             </div>
             
-            <div class="chart-box">
+            <div class="chart-box full-row">
                 <h2> Multi-Keyword Trend Comparison</h2>
                 <div class="centered-content">
-                    <select id="keyword-selector-1">
-                        {% for item in all_keywords %}
-                            <option value={{item}}> {{ item }}</option>
-                        {% endfor %}
-                    </select>
-                    <select id="keyword-selector-2">
-                        {% for item in all_keywords %}
-                            <option value={{item}}> {{ item }}</option>
-                        {% endfor %}
-                    </select>
-                    <button id="compare-btn" class="big-blue"> Compare </button>
+                    <div class="row-select-dp">
+                        <div class="labeled-select">
+                            <select required id="plot3-select1">
+                                <option value="" disabled selected></option>
+                                {% for item in keyword_list %}
+                                <option value={{item}}> {{ item }}</option>
+                                {% endfor %}
+                            </select>
+                            <label class="floating-label">Select Keyword 1</label>
+                        </div>
+                    </div>
+                    <button id="plot3-btn" class="big-blue"> Compare </button>
+                    <div class="row-select-dp">
+                        <div class="labeled-select">
+                            <select required id="plot3-select2">
+                                <option value="" disabled selected></option>
+                                {% for item in keyword_list %}
+                                <option value={{item}}> {{ item }}</option>
+                                {% endfor %}
+                            </select>
+                            <label class="floating-label">Select Keyword 2</label>
+                        </div>
+                    </div>
                 </div>
-                <canvas id="kw-compare"></canvas>
+                <canvas id="plot3"></canvas>
             </div>
             
             <div class="chart-box">
@@ -169,13 +293,13 @@ h2 {
         // https://www.chartjs.org/docs/latest/charts/doughnut.html
         // https://www.chartjs.org/docs/latest/charts/line.html
         // https://www.chartjs.org/docs/latest/charts/bar.html
-        new Chart(document.getElementById('frequency'), {
+        new Chart(document.getElementById('plot1'), {
             type:'line',
             data: {
-                labels: {{ labels | tojson }},
+                labels: {{ labels1 | tojson }},
                 datasets: [{
                     label: "Posts",
-                    data: {{ data | tojson}},
+                    data: {{ data1 | tojson}},
                     fill: false,
                     borderColor: 'rgb(75, 192, 192)',
                     tension: 0.1
@@ -183,18 +307,35 @@ h2 {
             }
         });
 
-        var changing_comp_chart = new Chart(document.getElementById('kw-compare'), {
+
+        var g_plot2 = new Chart(document.getElementById('plot2'), {
+            type:'line',
+            data: {
+                labels: {{ labels2 | tojson }},
+                datasets: [{
+                    label: "Posts",
+                    data: {{ data2 | tojson}},
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            }
+        });
+
+
+
+        var g_plot3 = new Chart(document.getElementById('plot3'), {
             type:'line',
             data: {
                 labels: [],
                 datasets: [{
-                    label: "Post growth by keyword1",
+                    label: "Post growth by keyword 1",
                     data: [] ,
                     fill: false,
                     borderColor: 'rgb(255, 159, 64)',
                     tension: 0.1
                 },{
-                label: "Post growth by keyword2",
+                label: "Post growth by keyword 2",
                     data: [] ,
                     fill: false,
                     borderColor: 'rgb(153, 102, 255)',
@@ -203,19 +344,17 @@ h2 {
             }
         });
 
-        new Chart(document.getElementById('sources'), {
-            type: 'doughnut',
+        new Chart(document.getElementById('plot4'), {
+            type:'doughnut',
             data: {
-                labels: {{ src_labels | tojson }},
+                labels: [],
                 datasets: [{
-                    label: "Sources",
-                    data: {{ src_data | tojson }},
-                    hoverOffset: 4
+                    label: "News Source Split",
+                    data: [100] ,
+                    fill: false,
+                    borderColor: 'rgb(255, 159, 64)',
+                    tension: 0.1
                 }]
-            },
-            options: {
-                responsive: true,
-                plugins: {legend: {position: 'left'}}
             }
         });
 
@@ -234,32 +373,34 @@ h2 {
         });
         
         const xhttp = new XMLHttpRequest();
-        var kw_sel = document.getElementById('keyword-selector')
-        var kw_sel1 = document.getElementById('keyword-selector-1')
-        var kw_sel2 = document.getElementById('keyword-selector-2')
+        var kw_sel = document.getElementById('plot2-select')
+
+        var kw_sel1 = document.getElementById('plot3-select1')
+        var kw_sel2 = document.getElementById('plot3-select2')
+        
         kw_sel.addEventListener('change' , ()=>{
             console.log(kw_sel.value)
             xhttp.onload = function(){
                 json_data = JSON.parse(xhttp.responseText)
-                changing_chart.data.labels = json_data['labels']
-                changing_chart.data['datasets'][0].data = json_data['data']
-                changing_chart.update()
+                g_plot2.data.labels = json_data['labels']
+                g_plot2.data['datasets'][0].data = json_data['data']
+                g_plot2.update()
             }
-            xhttp.open("GET", "/stats/api/get-keyword-timeline/" + kw_sel.value)
+            xhttp.open("GET", "/stats/api/plot2/" + kw_sel.value)
             xhttp.send()
         })
 
-        var kw_btn = document.getElementById('compare-btn')
+        var kw_btn = document.getElementById('plot3-btn')
         kw_btn.addEventListener('click', ()=>{
             
             xhttp.onload = function(){
                 json_data = JSON.parse(xhttp.responseText)
-                changing_comp_chart.data.labels = json_data['labels']
-                changing_comp_chart.data['datasets'][0].data = json_data['data1']
-                changing_comp_chart.data['datasets'][0].label = "Post growth by " + kw_sel1.value
-                changing_comp_chart.data['datasets'][1].data = json_data['data2']
-                changing_comp_chart.data['datasets'][1].label = "Post growth by " + kw_sel2.value
-                changing_comp_chart.update()
+                g_plot3.data.labels = json_data['labels']
+                g_plot3.data['datasets'][0].data = json_data['data1']
+                g_plot3.data['datasets'][0].label = "Post growth by " + kw_sel1.value
+                g_plot3.data['datasets'][1].data = json_data['data2']
+                g_plot3.data['datasets'][1].label = "Post growth by " + kw_sel2.value
+                g_plot3.update()
             }
 
             xhttp.open("POST", "/stats/api/get-keyword-comparison")
