@@ -33,7 +33,7 @@ Some hard mappings to make lookups efficient
 1. No Filter
 2. Category
 3. Source
-4. Unique KW count
+4. Unique KW countz
 #### Type (Source)
 1. TOI
 2. ...

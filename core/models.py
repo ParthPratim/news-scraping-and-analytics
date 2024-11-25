@@ -5,7 +5,7 @@ class StorageModel:
     def save_to_mongo(self, mongo_collection):
         # Convert to dictionary for MongoDB
         data = {k: v for k, v in self.__dict__.items() if k != 'self'}
-        mongo_collection.insert_one(data)       
+        mongo_collection.insert_one(data)
 
 class ScrappedNews(StorageModel):
     
