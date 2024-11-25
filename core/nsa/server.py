@@ -21,7 +21,8 @@ def setup_mongo_db_documents(app):
                 "_id" : doc_name
             })
     
-    return 
+    if "statistics" not in app.db.list_collection_names():
+        app.db.create_collection("statistics")
     
 
 
@@ -32,7 +33,7 @@ def create_app(test_config=None):
     app.config.from_object(ApplicationConfig)
     app.register_blueprint(stats_api, url_prefix='/stats')
     app.register_blueprint(home)
-    setup_mongo_db_documents(app)
+    setup_mongo_db_documents(app) 
     
     return app
     

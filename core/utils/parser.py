@@ -25,6 +25,38 @@ scraped for each article
     7. Categories           : Categories and Subcategories this sample is from
 """
 
+def isOkay(kw : str) :
+    if len(kw) <= 2:
+        return False
+    if kw.lower().startswith("today") :
+        return False
+
+    def is_num(potential : str):
+        try:
+            float(potential)
+            return  True
+        except ValueError :
+            return False
+
+    if is_num(kw) :
+        return False
+
+    if kw.lower().find("horoscope") != -1 :
+        return False
+
+    removal_list = [
+        "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+        "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
+        "eighteen", "nineteen", "twenty",  
+        "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", 
+        "ninth", "tenth",  
+        "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x",  
+        "etc", "et cetera"  
+    ]
+    if kw in removal_list :
+        return False
+    return True
+
 class TimesNowScrapper :
     def __init__(self, start_time : datetime.datetime , end_time : datetime.datetime):
         self.url_prefix = "https://timesofindia.indiatimes.com/archivelist/starttime-"
@@ -48,6 +80,7 @@ class TimesNowScrapper :
 
     def download_content(self):
         days = self.start_time
+        
         json_content = []
         base_url = "https://timesofindia.indiatimes.com"
         while days <= self.end_time:
@@ -62,7 +95,7 @@ class TimesNowScrapper :
                 #     soup = BeautifulSoup(f, 'html.parser')
             span_tags = soup.find_all('span', style="font-family:arial ;font-size:12;color: #006699")     
             pub_date = datetime.datetime(1900,1,1) + datetime.timedelta(days-2)
-            count_articles = 0;
+            count_articles = 0
             for info in span_tags:
                 links = [(a.get('href'), a.text) for a in info.find_all('a')]
                 for url, text in links:
@@ -76,6 +109,8 @@ class TimesNowScrapper :
                                              published_date=pub_date
                     )
                     news_item.save_to_mongo(self.db.toi_collection)
+
+                    
                     curr_docs = self.db.statistics.find({
                         "filter" : 2,
                         "tag" : {
@@ -84,25 +119,61 @@ class TimesNowScrapper :
                     }, {
                         "tag" : 1
                     })
-
+                    
                     curr_kws = {curr_doc['tag'] for curr_doc in curr_docs}
                     
                     not_present_kws = sum( kw not in curr_kws for kw in kws)                    
-
+                    
                     self.db.statistics.update_many(
                         {
                             "year": True,
-                            "filter" : 2,
-                            "tag" : {
-                                "$in" : kws
-                            }
+                            "filter" : 4,
                         }
                     ,{
                         '$inc' : {
-                            pub_date.year : 1
+                            str(pub_date.year) : not_present_kws
                         }
-                    }, upset=True)
+                    }, upsert=True)
+                    
+                    self.db.statistics.update_many(
+                        {
+                            "year": False,
+                            "filter" : 4,
+                        }
+                    ,{
+                        '$inc' : {
+                            str(pub_date.month) : not_present_kws
+                        }
+                    }, upsert=True)
 
+                    for kw in kws:
+                        if not isOkay(kw):
+                            continue
+
+                        self.db.statistics.update_one(
+                            {
+                                "year": True,
+                                "filter" : 2,
+                                "tag" : kw
+                            }
+                        ,{
+                            '$inc' : {
+                                str(pub_date.year) : 1
+                            }
+                        }, upsert=True)
+
+                        self.db.statistics.update_one(
+                            {
+                                "year": False,
+                                "filter" : 2,
+                                "tag" : kw
+                            }
+                        ,{
+                            '$inc' : {
+                                str(pub_date.month) : 1
+                            }
+                        }, upsert=True)
+                        
                     self.db.statistics.update_many(
                         {
                             "year": True,
@@ -111,29 +182,41 @@ class TimesNowScrapper :
                         }
                     ,{
                         '$inc' : {
-                            pub_date.year : 1
+                            str(pub_date.year) : 1
                         }
-                    }, upset=True)
-                    
+                    }, upsert=True)
 
-                    # curr_page = single_page.copy()
-                    # url = url if url[:4] == "http" else base_url + url
-                    # curr_page["url"] = url
-                    # curr_page["headline"] = text
-                    # curr_page["parse_time"] = str(datetime.datetime.now(datetime.UTC))
-                    # publish_date = datetime.datetime(1900,1,1) + datetime.timedelta(days-2)
-                    # curr_page["publish_date"] = str(publish_date.strftime("%Y-%m-%d"))
-                    # json_content.append(curr_page)
-                
+                    self.db.statistics.update_many(
+                        {
+                            "year": False,
+                            "filter" : 3,
+                            "tag" : 1
+                        }
+                    ,{
+                        '$inc' : {
+                            str(pub_date.month) : 1
+                        }
+                    }, upsert=True)
+                    
+            
             self.db.statistics.update_one({
                 "year" : True,
                 "filter" : 1,
             }, {
                 '$inc' : {
-                    pub_date.year : count_articles
+                    str(pub_date.year) : count_articles
                 }
             }, upsert=True)
-
+            
+            self.db.statistics.update_one({
+                "year" : False,
+                "filter" : 1,
+            }, {
+                '$inc' : {
+                    str(pub_date.month) : count_articles
+                }
+            }, upsert=True)
+                
             print(f"Finished parsing {days}")
             days = days + random.randrange(4,7)
 
