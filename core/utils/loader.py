@@ -14,11 +14,23 @@ def getNews(start_time : datetime , end_time : datetime) :
         }
     }
     )
+    result_list = []
+    for news in news_list:
+        news["_id"] = str(news["_id"])
+        result_list.append(news.copy())
+    return result_list
+
+def getFromKeyWords(keywords) :
+    db = app.db
+    print(keywords)
+    news_list = db.toi_collection.find({
+        "kws" : {
+            "$in": keywords
+        }
+    })
     news_list = list(news_list)
     result_list = []
     for news in news_list:
         news["_id"] = str(news["_id"])
         result_list.append(news.copy())
-        
-    return news_list
-
+    return result_list
