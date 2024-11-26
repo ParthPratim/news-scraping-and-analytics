@@ -22,16 +22,20 @@ document.addEventListener('DOMContentLoaded', function() {
         submitText.textContent = 'Filter';
     }
 
+    function endPointCom(formData, end_point = '/get_news') {
+        return fetch(end_point, {
+            method: 'POST',
+            body: formData
+        }
+        )
+    }
     dateForm.addEventListener('submit', function(e) {
         e.preventDefault();
         showLoading();
         
         const formData = new FormData(dateForm);
 
-        fetch('/get_news', {
-            method: 'POST',
-            body: formData
-        })
+        endPointCom(formData, '/get_news')
         .then(response => response.json())
         .then(data => {
             if(formData.get('start_time') > formData.get('end_time')){
@@ -59,37 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
                 return;
             }
-            
-            let newsHtml = '<div class="row row-cols-1 row-cols-md-2 g-4">';
-            data.news.forEach(news => {
-                newsHtml += `
-                    <div class="col">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">
-                                    <a href="${news.url}" class="text-decoration-none">
-                                        ${news.headline}
-                                    </a>
-                                </h5>
-                                <p class="card-text">
-                                    <small class="text-muted">
-                                        Published: ${news.published_date} |
-                                        Parsed: ${news.parse_time}
-                                    </small>
-                                    <br>
-                                </p>
-                                <div class="keywords">
-                                    ${news.kws.map(keyword => 
-                                        `<span class="badge bg-secondary me-1">${keyword}</span>`
-                                    ).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            newsHtml += '</div>';
-            newsContainer.innerHTML = newsHtml;
+            updateNewsDisplay(data.news);  
         })
         .catch(error => {
             console.log(error)
@@ -131,11 +105,33 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!response.ok) throw new Error('Network response was not ok');
             
             const data = await response.json();
+
+            if (data.error) {
+                newsContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        ${data.error}
+                    </div>
+                `;
+                return;
+            }
+            
+            if (!data.news || data.news.length === 0) {
+                newsContainer.innerHTML = `
+                    <div class="alert alert-info">
+                        No news found for the keywords.
+                    </div>
+                `;
+                return;
+            }
             updateNewsDisplay(data.news);  
             
         } catch (error) {
-            console.error('Error:', error);
-            alert('Error filtering news');
+            console.log(error)
+            newsContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    Failed to load news. Please try again.
+                </div>
+            `;
         } finally {
             // Reset loading state
             spinner.classList.add('d-none');
