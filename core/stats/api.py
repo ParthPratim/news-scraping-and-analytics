@@ -18,34 +18,34 @@ def get_keywords_list(coll, year=True):
         "tag" : 1
     }))]
 
-def get_temporal_data(coll, keywords = [], sources = None, year = True):
-    
+def process(data, year):
     if year:
         pot_labels = range(2002,2025,1)
     else:
         pot_labels = range(1,13,1)
+    data = list(data)
+    print(data)
+    s_data = defaultdict(lambda: 0)
+    
+    for d in data:
+        for p in pot_labels:
+            if str(p) in d:
+                s_data[str(p)] += d[str(p)]
+    
+    return {
+        "labels" : list(s_data.keys()),
+        "values" : list(s_data.values())
+    }
 
-    def process(data):
-        data = list(data)
-        print(data)
-        s_data = defaultdict(lambda: 0)
-        
-        for d in data:
-            for p in pot_labels:
-                if str(p) in d:
-                    s_data[str(p)] += d[str(p)]
-        
-        return {
-            "labels" : list(s_data.keys()),
-            "values" : list(s_data.values())
-        }
+def get_temporal_data(coll, keywords = [], sources = None, year = True):
+    
 
     if keywords == [] and sources == None:
         # find cumulative
         return process(coll.find({
             "year" : year,
             "filter" : 1
-        }))
+        }), year)
     else:
         kw1 = defaultdict(lambda: [])
 
@@ -58,14 +58,14 @@ def get_temporal_data(coll, keywords = [], sources = None, year = True):
                 "tag" : {
                     "$in" : keywords
                 }
-            }))
+            }),year)
         
         if sources:
             kw2 = process(coll.find({
                 "year" : year,
                 "filter" : 3,
                 "tag" : sources
-            }))
+            }),year)
         
         combined = defaultdict(lambda : 0)
         for j in range(len(kw1['labels'])):
@@ -110,6 +110,14 @@ def stats_home():
     context['labels2'] = list(d2['labels'])
     context['data2'] = list(d2['values'])
 
+    d3 = process(db.statistics.find({
+        "year" : True,
+        "filter" : 4
+    }),True)
+
+    context['labels3'] = list(d3['labels'])
+    context['data3'] = list(d3['values'])   
+
     print(context)
 
     return render_template("viz1.html", **context)
@@ -145,3 +153,14 @@ def get_keyword_comparison():
         "data1" : list(d1['values']),
         "data2" : list(d2['values']),
     })
+
+@stats_api.route('/viewer/<keyword>', methods=['GET'])
+def stats_viewer(keyword):
+    db = app.db
+    d1 = get_temporal_data(db.statistics, keywords=[keyword])
+    context = {
+        "keyword" : keyword,
+        "labels" : list(d1['labels']),
+        "values" : list(d1['values'])
+    }
+    return render_template("viewer.html", **context)
