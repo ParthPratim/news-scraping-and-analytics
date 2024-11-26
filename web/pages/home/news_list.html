@@ -13,7 +13,9 @@
         </p>
         <div class="keywords">
             {% for keyword in news.kws %}
-                <span class="badge bg-secondary me-1">{{ keyword }}</span>
+                <a href="/stats/viewer/{{ keyword|urlencode }}" class="text-decoration-none">
+                    <span class="badge bg-secondary me-1">{{ keyword }}</span>
+                </a>
             {% endfor %}
         </div>
     </div>

@@ -166,7 +166,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             </p>
                             <div class="keywords">
                                 ${news.kws.map(keyword => 
-                                    `<span class="badge bg-secondary me-1">${keyword}</span>`
+                                    `<a href="/stats/viewer/${encodeURIComponent(keyword)}" class="text-decoration-none">
+                                        <span class="badge bg-secondary me-1">${keyword}</span>
+                                    </a>`
                                 ).join('')}
                             </div>
                         </div>
