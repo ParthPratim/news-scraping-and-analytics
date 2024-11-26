@@ -192,6 +192,12 @@ canvas{
     display: inline-block;
     vertical-align: middle;
 }
+
+.control-month{
+    top: 10;
+    left: 0;
+}
+
 </style>
 </head>
 <body>
@@ -245,6 +251,7 @@ canvas{
             <div class="chart-box full-row">
                 <h2> Multi-Keyword Trend Comparison</h2>
                 <div class="centered-content">
+                    <span style="margin-right: 10px;"><input type="checkbox" id="by-month">By Month</span>
                     <div class="row-select-dp">
                         <div class="labeled-select">
                             <select required id="plot3-select1">
@@ -407,6 +414,8 @@ canvas{
 
         var kw_sel1 = document.getElementById('plot3-select1')
         var kw_sel2 = document.getElementById('plot3-select2')
+
+        var bmonth = document.getElementById('by-month')
         
         kw_sel.addEventListener('change' , ()=>{
             console.log(kw_sel.value)
@@ -416,7 +425,7 @@ canvas{
                 g_plot2.data['datasets'][0].data = json_data['data']
                 g_plot2.update()
             }
-            xhttp.open("GET", "/stats/api/plot2/" + kw_sel.value)
+            xhttp.open("GET", "/stats/api/plot2/year" + kw_sel.value)
             xhttp.send()
         })
 
@@ -447,10 +456,15 @@ canvas{
                 g_plot3.data['datasets'][1].label = "Post growth by " + kw_sel2.value
                 g_plot3.update()
             }
+            
+            var unit = "year"
+            if(bmonth.checked){
+                unit = "month"
+            }
 
             xhttp.open("POST", "/stats/api/get-keyword-comparison")
             xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xhttp.send(JSON.stringify({ "keyword1" : kw_sel1.value , "keyword2" : kw_sel2.value }));
+            xhttp.send(JSON.stringify({ "keyword1" : kw_sel1.value , "keyword2" : kw_sel2.value , "unit" : unit}));
 
         })
 
