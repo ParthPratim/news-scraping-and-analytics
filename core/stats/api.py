@@ -4,6 +4,7 @@ import pandas as pd
 import random
 from collections import defaultdict
 import os
+import operator
 from flask import current_app as app
 
 
@@ -79,6 +80,29 @@ def get_temporal_data(coll, keywords = [], sources = None, year = True):
             "values" : combined.values()
         }
              
+
+def getkwshare(year):
+    doc = app.db.statistics.find_one({
+        "year" : True,
+        "filter" : 5,
+        "tag" : year
+    },{
+        "_id" : 0,
+        "year" : 0,
+        "filter" : 0,
+        "tag" : 0
+    })
+
+    
+    s_doc = sorted(doc.items(), key=operator.itemgetter(1), reverse=True)
+
+    k = min(5 , len(s_doc))
+    
+    prep = [ b for a,b in  s_doc[:k]]
+
+    return [a for a,b in s_doc[:k] ] , prep
+
+            
 @stats_api.route('/vizmaster')
 def stats_home():
 
@@ -93,7 +117,7 @@ def stats_home():
     })
     
     context['total_articles'] = sum([ all_articles[t] for t in all_articles.keys() if t not in ['_id', "year", "filter"]])
-    context['range'] = min([t for t in all_articles.keys() if t not in ['_id', "year", "filter"]]) + " - 2024" ;
+    context['mrange'] = min([t for t in all_articles.keys() if t not in ['_id', "year", "filter"]]) + " - 2024" ;
     context['num_keywords'] = db.statistics.count_documents({
         "year" : True,
         "filter" : 2
@@ -118,7 +142,9 @@ def stats_home():
     context['labels3'] = list(d3['labels'])
     context['data3'] = list(d3['values'])   
 
-    print(context)
+    a,b  = getkwshare(2024)
+    context['top5_labels'] = a
+    context['top5_values'] = b
 
     return render_template("viz1.html", **context)
 
@@ -132,6 +158,18 @@ def get_keyword_timeline(keyword):
     return jsonify({
         "labels" : list(d1['labels']),
         "data" : list(d1['values']),
+    })
+
+
+@stats_api.route('/api/plot6/<year>', methods=['GET'])
+def get_kw_year_share(year):
+    
+
+    a,b  = getkwshare(int(year))
+    
+    return jsonify({
+        "labels" : a,
+        "data" : b,
     })
 
 

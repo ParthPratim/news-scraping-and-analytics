@@ -43,6 +43,7 @@ h2 {
 
 canvas{
     width: 100%;
+    max-height: 350px;
 }
 
 .chart-box {
@@ -51,7 +52,7 @@ canvas{
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 2px 4px #0001; 
-    height: 400px; 
+    
 }
 
 .full-row{
@@ -203,7 +204,7 @@ canvas{
                 <div class="label">Total Articles</div>
             </div>
             <div class="stat_box">
-                <div class="number">{{ range }}</div>
+                <div class="number">{{ mrange }}</div>
                 <div class="label">Year Range</div>
             </div>
             <div class="stat_box">
@@ -227,9 +228,9 @@ canvas{
                 <h2>Top-5 Keyword share for each year</h2>
                 <div class="labeled-select-container">
                     <div class="labeled-select">
-                        <select required id="plot2-select">
+                        <select required id="plot6-select">
                             <option value="" disabled selected></option>
-                            {% for year in range(range,2024,1) %}
+                            {% for year in range(mrange | int,2024,1) %}
                             <option value={{year}}> {{ year }}</option>
                             {% endfor %}
                             <option value="2024" selected>2024</option>
@@ -277,11 +278,6 @@ canvas{
             </div>
             
             <div class="chart-box">
-                <h2> New-Keyword Addition Trends </h2>
-                <canvas id="plot5"></canvas>
-            </div>
-
-            <div class="chart-box">
                 <h2>Articles per Keyword Over Time</h2>
                 <div class="labeled-select-container">
                     <div class="labeled-select">
@@ -296,6 +292,13 @@ canvas{
                 </div>
                 <canvas id="plot2"></canvas>
             </div>
+
+            <div class="chart-box full-row">
+                <h2> New-Keyword Addition Trends </h2>
+                <canvas id="plot5"></canvas>
+            </div>
+
+            
         </div>
     </div>
 
@@ -385,6 +388,19 @@ canvas{
             }
         });
 
+        g_plot6 = new Chart(document.getElementById('plot6'), {
+            type:'doughnut',
+            data: {
+                labels: {{ top5_labels | tojson }},
+                datasets: [{
+                    label: "Keyword Share",
+                    data: {{ top5_values | tojson }} ,
+                    hoverOffset: 4,
+                    tension: 0.1
+                }]
+            }
+        });
+
         
         const xhttp = new XMLHttpRequest();
         var kw_sel = document.getElementById('plot2-select')
@@ -403,6 +419,21 @@ canvas{
             xhttp.open("GET", "/stats/api/plot2/" + kw_sel.value)
             xhttp.send()
         })
+
+
+        var kw_sel6 = document.getElementById('plot6-select')
+        kw_sel6.addEventListener('change' , ()=>{
+            console.log(kw_sel6.value)
+            xhttp.onload = function(){
+                json_data = JSON.parse(xhttp.responseText)
+                g_plot6.data.labels = json_data['labels']
+                g_plot6.data['datasets'][0].data = json_data['data']
+                g_plot6.update()
+            }
+            xhttp.open("GET", "/stats/api/plot6/" + kw_sel6.value)
+            xhttp.send()
+        })
+
 
         var kw_btn = document.getElementById('plot3-btn')
         kw_btn.addEventListener('click', ()=>{
