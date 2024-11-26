@@ -34,6 +34,7 @@ Some hard mappings to make lookups efficient
 2. Category
 3. Source
 4. Unique KW countz
+5. Year - Keyword Map
 #### Type (Source)
 1. TOI
 2. ...

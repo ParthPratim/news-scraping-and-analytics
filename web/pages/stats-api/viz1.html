@@ -224,20 +224,22 @@ canvas{
             </div>
             
             <div class="chart-box">
-                <h2>Articles per Keyword Over Time</h2>
+                <h2>Top-5 Keyword share for each year</h2>
                 <div class="labeled-select-container">
                     <div class="labeled-select">
                         <select required id="plot2-select">
                             <option value="" disabled selected></option>
-                            {% for item in keyword_list %}
-                            <option value={{item}}> {{ item }}</option>
+                            {% for year in range(range,2024,1) %}
+                            <option value={{year}}> {{ year }}</option>
                             {% endfor %}
+                            <option value="2024" selected>2024</option>
                         </select>
-                        <label class="floating-label">Select Keyword</label>
+                        <label class="floating-label">Select Year</label>
                     </div>
                 </div>
-                <canvas id="plot2"></canvas>
+                <canvas id="plot6"></canvas>
             </div>
+            
             
             <div class="chart-box full-row">
                 <h2> Multi-Keyword Trend Comparison</h2>
@@ -278,6 +280,22 @@ canvas{
                 <h2> New-Keyword Addition Trends </h2>
                 <canvas id="plot5"></canvas>
             </div>
+
+            <div class="chart-box">
+                <h2>Articles per Keyword Over Time</h2>
+                <div class="labeled-select-container">
+                    <div class="labeled-select">
+                        <select required id="plot2-select">
+                            <option value="" disabled selected></option>
+                            {% for item in keyword_list %}
+                            <option value={{item}}> {{ item }}</option>
+                            {% endfor %}
+                        </select>
+                        <label class="floating-label">Select Keyword</label>
+                    </div>
+                </div>
+                <canvas id="plot2"></canvas>
+            </div>
         </div>
     </div>
 
@@ -314,6 +332,7 @@ canvas{
                 }]
             }
         });
+        
 
 
 
