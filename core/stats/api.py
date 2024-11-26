@@ -25,17 +25,22 @@ def process(data, year):
     else:
         pot_labels = range(1,13,1)
     data = list(data)
-    print(data)
+    
     s_data = defaultdict(lambda: 0)
     
     for d in data:
         for p in pot_labels:
             if str(p) in d:
                 s_data[str(p)] += d[str(p)]
+    l = list(s_data.keys())
+    v = list(s_data.values())
+    if len(l) > 1 and l[0] > l[1]:
+        l.reverse() 
+        v.reverse()
     
     return {
-        "labels" : list(s_data.keys()),
-        "values" : list(s_data.values())
+        "labels" : l,
+        "values" : v
     }
 
 def get_temporal_data(coll, keywords = [], sources = None, year = True):
@@ -75,9 +80,14 @@ def get_temporal_data(coll, keywords = [], sources = None, year = True):
         for j in range(len(kw2['labels'])):
             combined[kw2['labels'][j]] = min(combined[kw2['labels'][j]], kw2['values'][j])
         
+        l = list(combined.keys())
+        v = list(combined.values())
+        if len(l) > 1 and l[0] > l[1]:
+            l.reverse() 
+            v.reverse()
         return {
-            "labels" : combined.keys(),
-            "values" : combined.values()
+            "labels" : l,
+            "values" : v
         }
              
 
@@ -148,11 +158,12 @@ def stats_home():
 
     return render_template("viz1.html", **context)
 
-@stats_api.route('/api/plot2/<keyword>', methods=['GET'])
-def get_keyword_timeline(keyword):
+@stats_api.route('/api/plot2/<keyword>/<unit>', methods=['GET'])
+def get_keyword_timeline(keyword,unit):
     
     db = app.db
 
+    
     d1 = get_temporal_data(db.statistics, keywords=[keyword])
     
     return jsonify({
@@ -181,13 +192,21 @@ def get_keyword_comparison():
 
     kw1 = req_data['keyword1'] 
     kw2 = req_data['keyword2'] 
+    unit = req_data['unit']
 
-    d1 = get_temporal_data(db.statistics, keywords=[kw1])
-    d2 = get_temporal_data(db.statistics, keywords=[kw2])
+    year = False
+    if unit == "year":
+        year = True
 
+    d1 = get_temporal_data(db.statistics, keywords=[kw1], year=year)
+    d2 = get_temporal_data(db.statistics, keywords=[kw2], year=year)
+
+    x = list(set(list(d1['labels']) + list(d2['labels'])))
+    if len(x) > 1 and x[0] > x[1]:
+        x.reverse()
 
     return jsonify({
-        "labels" : list(set(list(d1['labels']) + list(d2['labels']))),
+        "labels" : x,
         "data1" : list(d1['values']),
         "data2" : list(d2['values']),
     })
