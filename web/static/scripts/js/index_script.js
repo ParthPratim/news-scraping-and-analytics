@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
         submitText.textContent = 'Filter';
     }
 
+    // Try for recursive change in end point if fetching not done?
+    // Lets try for lateer
     function endPointCom(formData, end_point = '/get_news') {
         return fetch(end_point, {
             method: 'POST',
@@ -172,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             `;
         });
-        
+
         newsHtml += '</div>';
         newsContainer.innerHTML = newsHtml;
     }

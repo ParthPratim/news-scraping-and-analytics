@@ -24,15 +24,14 @@ services:
       ME_CONFIG_BASICAUTH: false
 
 
-  #web:
-  #  build: .
-    # command: python3 -m flask --debug --app core/nsa run -h 0.0.0.0 -p 5000 
-  #  command: gunicorn -w 8 -b 0.0.0.0:5000 "core.nsa.server:create_app()" --timeout 0
-  #  volumes:
-  #    - .:/news_con/
-  #  ports:
-  #    - 5000:5000
-  #  depends_on: ["mongo"]
+  web:
+   build: .
+   command: gunicorn -w 8 -b 0.0.0.0:5000 "core.nsa.server:create_app()" --timeout 0
+   volumes:
+     - .:/news_con/
+   ports:
+     - 5000:5000
+   depends_on: ["mongo"]
 
 
 volumes:

@@ -46,7 +46,7 @@ def isOkay(kw : str) :
 
     if is_num(kw):
         return False
-
+    # year, _id, tag, filter,
     if kw.lower().find("horoscope") != -1 :
         return False
 
@@ -57,9 +57,10 @@ def isOkay(kw : str) :
         "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", 
         "ninth", "tenth",  
         "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x",  
-        "etc", "et cetera"  
+        "etc", "et cetera",
+        "year", "_id", "tag", "filter"
     ]
-    if kw in removal_list :
+    if kw.lower() in removal_list :
         return False
     return True
 
