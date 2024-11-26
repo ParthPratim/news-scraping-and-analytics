@@ -28,7 +28,7 @@ scraped for each article
 def isOkay(kw : str) :
     if len(kw) <= 2:
         return False
-    if kw.lower().startswith("today") :
+    if kw.lower().startswith("today") or '.' in kw or '$' in kw:
         return False
 
     def is_num(potential : str):
@@ -113,6 +113,16 @@ class TimesNowScrapper :
                                              kws=approved_kws,
                     )
                     news_item.save_to_mongo(self.db.toi_collection)
+
+                    self.db.statistics.update_one(
+                            {
+                                "year": True,
+                                "filter" : 5,
+                                "tag" : pub_date.year
+                            }
+                        ,{
+                            '$inc' : {f"{key}":1 for key in approved_kws}
+                        }, upsert=True)
 
                     curr_docs = self.db.statistics.find({
                         "filter" : 2,
