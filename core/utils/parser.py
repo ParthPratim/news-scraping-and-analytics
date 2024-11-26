@@ -38,7 +38,13 @@ def isOkay(kw : str) :
         except ValueError :
             return False
 
-    if is_num(kw) :
+    def has_digit(n):
+        for i in n:
+            if i.isdigit():
+                return True
+        return False
+
+    if is_num(kw):
         return False
 
     if kw.lower().find("horoscope") != -1 :
@@ -214,7 +220,7 @@ class TimesNowScrapper :
                 
             print(f"Finished parsing {days}")
             # days = days + random.randrange(4,7)
-            days = days + 1
+            days = days + 7
 
         print(f"Parser done! with {self.start_time} and {self.end_time}")
         # self.news_list = json_content.copy()

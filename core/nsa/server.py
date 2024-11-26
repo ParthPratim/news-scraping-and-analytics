@@ -6,7 +6,7 @@ from core.config import ApplicationConfig
 import json
 
 def setup_mongo_db_documents(app):
-    app.config["MONGO_URI"] = "mongodb://root:root@mongo:27017/news_db?authSource=admin"
+    app.config["MONGO_URI"] = "mongodb://root:root@localhost:27017/news_db?authSource=admin"
     mongo = PyMongo(app)
     app.db = mongo.db
 
@@ -24,7 +24,6 @@ def setup_mongo_db_documents(app):
     if "statistics" not in app.db.list_collection_names():
         app.db.create_collection("statistics")
     
-
 
 # https://flask.palletsprojects.com/en/stable/tutorial/factory/
 def create_app(test_config=None):
